@@ -15,6 +15,15 @@ const UserSchema = mongoose.Schema({
     required: true,
     unique: true,
   },
+  dialCode: {
+    type: String,
+    required: true,
+  },
+  mobile: {
+    type: String,
+    required: true,
+  },
+
   role: {
     type: String,
     required: true,
@@ -23,6 +32,7 @@ const UserSchema = mongoose.Schema({
     type: Boolean,
     required: true,
   },
+
 });
 
 module.exports = mongoose.model("User", UserSchema);
