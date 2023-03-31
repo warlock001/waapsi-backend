@@ -15,16 +15,14 @@ app.use(cors(corsOptions));
 var bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 
-const signupRouter = require("./routes/signup");
-const LoginRouter = require("./routes/login");
-const service = require("./routes/service");
-
 app.use(express.json({ limit: "200mb" }));
 app.use(express.urlencoded({ limit: "200mb" }));
 
-app.use(signupRouter);
-app.use(LoginRouter);
-app.use(service);
+app.use(require("./routes/signup"));
+app.use(require("./routes/login"));
+app.use(require("./routes/service"));
+app.use(require("./routes/order"));
+app.use(require("./routes/sales"));
 
 app.listen(process.env.API_PORT, (error) => {
   if (error) {
