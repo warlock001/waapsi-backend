@@ -45,30 +45,148 @@ class GetSalesController {
     const thisMonth = d.getMonth() + 1;
 
     if (period == "thisMonth") {
-      Order.aggregate([
-        { $addFields: { month: { $month: "$createdAt" } } },
-        { $match: { month: thisMonth } },
-      ]).then((response, err) => {
-        if (err) {
-          return res.status(400).send(err);
-        } else {
-          res.status(200).json({
-            services: response,
+      // Order.aggregate([
+      //   { $addFields: { month: { $month: "$createdAt" } } },
+      //   { $match: { month: thisMonth } },
+      // ]).then((response, err) => {
+      //   if (err) {
+      //     return res.status(400).send(err);
+      //   } else {
+      //     res.status(200).json({
+      //       services: response,
+      //     });
+      //   }
+      // });
+
+      var finalResponse = [];
+
+      async function func() {
+        for (let i = 1; i < 31; i++) {
+          var today_date = new Date();
+          const CustomDate = new Date(
+            today_date.getFullYear() +
+              "-" +
+              (today_date.getMonth() + 1) +
+              "-" +
+              (i + 1)
+          );
+          var CustomDateMax;
+          if (i == 30) {
+            CustomDateMax = new Date(
+              today_date.getFullYear() +
+                "-" +
+                (today_date.getMonth() + 1) +
+                "-" +
+                31
+            );
+          } else {
+            CustomDateMax = new Date(
+              today_date.getFullYear() +
+                "-" +
+                (today_date.getMonth() + 1) +
+                "-" +
+                (i + 2)
+            );
+          }
+
+          console.log(CustomDate);
+          console.log(CustomDateMax);
+          await Order.find({
+            createdAt: {
+              $gte: CustomDate,
+              $lt: CustomDateMax,
+            },
+          }).then((response) => {
+            var Total = 0;
+            console.log(response);
+            response.forEach((item) => {
+              Total = Total + item.total;
+              console.log(Total + "is total");
+            });
+            if (Total) {
+              finalResponse.push({ date: i, total: Total });
+            }
           });
         }
+      }
+
+      await func().then(() => {
+        console.log(finalResponse + "is finalResponse");
+        res.status(200).json({
+          services: finalResponse,
+        });
       });
     } else if (period == "pastMonth") {
-      Order.aggregate([
-        { $addFields: { month: { $month: "$createdAt" } } },
-        { $match: { month: thisMonth - 1 } },
-      ]).then((response, err) => {
-        if (err) {
-          return res.status(400).send(err);
-        } else {
-          res.status(200).json({
-            services: response,
+      // Order.aggregate([
+      //   { $addFields: { month: { $month: "$createdAt" } } },
+      //   { $match: { month: thisMonth - 1 } },
+      // ]).then((response, err) => {
+      //   if (err) {
+      //     return res.status(400).send(err);
+      //   } else {
+      //     res.status(200).json({
+      //       services: response,
+      //     });
+      //   }
+      // });
+
+      var finalResponse = [];
+
+      async function func() {
+        for (let i = 1; i < 31; i++) {
+          var today_date = new Date();
+          const CustomDate = new Date(
+            today_date.getFullYear() +
+              "-" +
+              (today_date.getMonth() - 1) +
+              "-" +
+              (i + 1)
+          );
+          var CustomDateMax;
+          if (i == 30) {
+            CustomDateMax = new Date(
+              today_date.getFullYear() +
+                "-" +
+                (today_date.getMonth() - 1) +
+                "-" +
+                31
+            );
+          } else {
+            CustomDateMax = new Date(
+              today_date.getFullYear() +
+                "-" +
+                (today_date.getMonth() - 1) +
+                "-" +
+                (i + 2)
+            );
+          }
+
+          console.log(CustomDate);
+          console.log(CustomDateMax);
+          await Order.find({
+            createdAt: {
+              $gte: CustomDate,
+              $lt: CustomDateMax,
+            },
+          }).then((response) => {
+            var Total = 0;
+            console.log(response);
+            response.forEach((item) => {
+              Total = Total + item.total;
+              console.log(Total + "is total");
+            });
+            if (Total) {
+              finalResponse.push({ date: i, total: Total });
+            }
           });
         }
+      }
+
+      await func().then(() => {
+        console.log(finalResponse + "is finalResponse");
+        res.status(200).json({
+          services: finalResponse,
+        });
       });
     } else if (period == "thisWeek") {
       Order.aggregate([
