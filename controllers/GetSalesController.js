@@ -37,12 +37,18 @@ class GetSalesController {
       return last_monday_date;
     }
 
+
+
     const { period } = req.query;
     const { date } = req.query;
 
     const d = new Date();
-    var LAST_MONDAY = getLastMonday(d);
+    console.log(d)
     const thisMonth = d.getMonth() + 1;
+    var LAST_MONDAY = getLastMonday(d);
+    var LAST_MONDAY_Date = new Date(LAST_MONDAY);
+    var NEXT_SUNDAY_Date = new Date(LAST_MONDAY_Date)
+    var NEXT_SUNDAY = NEXT_SUNDAY_Date.setDate(NEXT_SUNDAY_Date.getDate() + 6);
 
     if (period == "thisMonth") {
       // Order.aggregate([
@@ -65,27 +71,27 @@ class GetSalesController {
           var today_date = new Date();
           const CustomDate = new Date(
             today_date.getFullYear() +
-              "-" +
-              (today_date.getMonth() + 1) +
-              "-" +
-              (i + 1)
+            "-" +
+            (today_date.getMonth() + 1) +
+            "-" +
+            (i + 1)
           );
           var CustomDateMax;
           if (i == 30) {
             CustomDateMax = new Date(
               today_date.getFullYear() +
-                "-" +
-                (today_date.getMonth() + 1) +
-                "-" +
-                31
+              "-" +
+              (today_date.getMonth() + 1) +
+              "-" +
+              31
             );
           } else {
             CustomDateMax = new Date(
               today_date.getFullYear() +
-                "-" +
-                (today_date.getMonth() + 1) +
-                "-" +
-                (i + 2)
+              "-" +
+              (today_date.getMonth() + 1) +
+              "-" +
+              (i + 2)
             );
           }
 
@@ -137,27 +143,27 @@ class GetSalesController {
           var today_date = new Date();
           const CustomDate = new Date(
             today_date.getFullYear() +
-              "-" +
-              (today_date.getMonth() - 1) +
-              "-" +
-              (i + 1)
+            "-" +
+            (today_date.getMonth() - 1) +
+            "-" +
+            (i + 1)
           );
           var CustomDateMax;
           if (i == 30) {
             CustomDateMax = new Date(
               today_date.getFullYear() +
-                "-" +
-                (today_date.getMonth() - 1) +
-                "-" +
-                31
+              "-" +
+              (today_date.getMonth() - 1) +
+              "-" +
+              31
             );
           } else {
             CustomDateMax = new Date(
               today_date.getFullYear() +
-                "-" +
-                (today_date.getMonth() - 1) +
-                "-" +
-                (i + 2)
+              "-" +
+              (today_date.getMonth() - 1) +
+              "-" +
+              (i + 2)
             );
           }
 
@@ -189,40 +195,55 @@ class GetSalesController {
         });
       });
     } else if (period == "thisWeek") {
-      Order.aggregate([
-        {
-          $addFields: {
-            last_monday: {
-              $dateFromParts: {
-                year: { $year: new Date(LAST_MONDAY) },
-                month: { $month: new Date(LAST_MONDAY) },
-                day: { $dayOfMonth: new Date(LAST_MONDAY) },
-              },
-            },
-            created_at: {
-              $dateFromParts: {
-                year: { $year: "$createdAt" },
-                month: { $month: "$createdAt" },
-                day: { $dayOfMonth: "$createdAt" },
-              },
-            },
-          },
+      Order.find({
+        createdAt: {
+          $gte: LAST_MONDAY_Date,
+          $lt: NEXT_SUNDAY_Date,
         },
-        {
-          $match: { $expr: { $gt: ["$created_at", "$last_monday"] } },
-        },
-        {
-          $project: { created_at: 0, last_monday: 0 },
-        },
-      ]).then((response, err) => {
+      }).then((response, err) => {
         if (err) {
           return res.status(400).send(err);
         } else {
+          console.log(response)
+          var finalResponse = [];
+          var length = response.length
+          for (var i = 0; i < length; i++) {
+            var total = 0
+
+            var total = response[i]?.total;
+
+            for (var j = i + 1; j < length; j++) {
+              console.log(response[i]?.createdAt.getDate())
+              if (response[i]?.createdAt.getDate() == response[j]?.createdAt.getDate()) {
+
+                if (response[j]?.total) {
+
+                  total = total + response[j].total
+                }
+                console.log(total)
+                delete response[j]
+                console.log(response)
+
+              }
+
+            }
+            if (response[i]) {
+              finalResponse.push({ date: response[i].createdAt, total: total });
+            }
+
+            delete response[i]
+          }
+
+
           res.status(200).json({
-            services: response,
+            services: finalResponse,
           });
         }
       });
+
+
+
+
     } else if (period == "customDate") {
       if (date) {
         const CustomDate = new Date(date);
@@ -238,8 +259,37 @@ class GetSalesController {
           if (err) {
             return res.status(400).send(err);
           } else {
+            var finalResponse = [];
+            var length = response.length
+            for (var i = 0; i < length; i++) {
+              var total = 0
+
+              var total = response[i]?.total;
+
+              for (var j = i + 1; j < length; j++) {
+                console.log(response[i]?.createdAt.getHours())
+                if (response[i]?.createdAt.getHours() == response[j]?.createdAt.getHours()) {
+
+                  if (response[j]?.total) {
+
+                    total = total + response[j].total
+                  }
+                  delete response[j]
+
+
+                }
+
+              }
+              if (response[i]) {
+                finalResponse.push({ time: response[i].createdAt.getHours(), total: total });
+              }
+
+              delete response[i]
+            }
+
+
             res.status(200).json({
-              services: response,
+              services: finalResponse,
             });
           }
         });
@@ -263,8 +313,39 @@ class GetSalesController {
           if (err) {
             return res.status(400).send(err);
           } else {
+            console.log(response)
+            var finalResponse = [];
+            var length = response.length
+            for (var i = 0; i < length; i++) {
+              var total = 0
+
+              var total = response[i]?.total;
+
+              for (var j = i + 1; j < length; j++) {
+                console.log(response[i]?.createdAt.getDate())
+                if (response[i]?.createdAt.getDate() == response[j]?.createdAt.getDate()) {
+
+                  if (response[j]?.total) {
+
+                    total = total + response[j].total
+                  }
+                  console.log(total)
+                  delete response[j]
+                  console.log(response)
+
+                }
+
+              }
+              if (response[i]) {
+                finalResponse.push({ date: response[i].createdAt, total: total });
+              }
+
+              delete response[i]
+            }
+
+
             res.status(200).json({
-              services: response,
+              services: finalResponse,
             });
           }
         });
@@ -288,8 +369,39 @@ class GetSalesController {
           if (err) {
             return res.status(400).send(err);
           } else {
+            console.log(response)
+            var finalResponse = [];
+            var length = response.length
+            for (var i = 0; i < length; i++) {
+              var total = 0
+
+              var total = response[i]?.total;
+
+              for (var j = i + 1; j < length; j++) {
+                console.log(response[i]?.createdAt.getDate())
+                if (response[i]?.createdAt.getDate() == response[j]?.createdAt.getDate()) {
+
+                  if (response[j]?.total) {
+
+                    total = total + response[j].total
+                  }
+                  console.log(total)
+                  delete response[j]
+                  console.log(response)
+
+                }
+
+              }
+              if (response[i]) {
+                finalResponse.push({ date: response[i].createdAt, total: total });
+              }
+
+              delete response[i]
+            }
+
+
             res.status(200).json({
-              services: response,
+              services: finalResponse,
             });
           }
         });
