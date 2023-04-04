@@ -1,7 +1,6 @@
-const { check } = require("express-validator");
-const Order = require("../models/order");
+const User = require("../models/user");
 
-class GetSalesController {
+class GetUserController {
   static async Execute(req, res) {
     const { period } = req.query;
     const { date } = req.query;
@@ -43,38 +42,20 @@ class GetSalesController {
 
       return last_monday_date;
     }
-    const d = new Date();
 
+    const d = new Date();
     const thisMonth = d.getMonth() + 1;
-    d.setHours(d.getHours() + 5);
-    console.log(d);
     var LAST_MONDAY = getLastMonday(d);
     var LAST_MONDAY_Date = new Date(LAST_MONDAY);
     var NEXT_SUNDAY_Date = new Date(LAST_MONDAY_Date);
-    var NEXT_SUNDAY = NEXT_SUNDAY_Date.setDate(NEXT_SUNDAY_Date.getDate() + 6);
+    NEXT_SUNDAY_Date.setDate(NEXT_SUNDAY_Date.getDate() + 6);
     NEXT_SUNDAY_Date.setHours("4");
     NEXT_SUNDAY_Date.setMinutes("59");
     NEXT_SUNDAY_Date.setSeconds("59");
     LAST_MONDAY_Date.setDate(LAST_MONDAY_Date.getDate() - 1);
-    LAST_MONDAY_Date.setHours("11");
-
-    console.log(LAST_MONDAY_Date);
-    console.log(NEXT_SUNDAY_Date);
+    LAST_MONDAY_Date.setHours(5);
 
     if (period == "thisMonth") {
-      // Order.aggregate([
-      //   { $addFields: { month: { $month: "$createdAt" } } },
-      //   { $match: { month: thisMonth } },
-      // ]).then((response, err) => {
-      //   if (err) {
-      //     return res.status(400).send(err);
-      //   } else {
-      //     res.status(200).json({
-      //       sales: response,
-      //     });
-      //   }
-      // });
-
       var finalResponse = [];
 
       async function func() {
@@ -109,7 +90,7 @@ class GetSalesController {
             );
           }
 
-          await Order.find({
+          await User.find({
             createdAt: {
               $gte: CustomDate,
               $lt: CustomDateMax,
@@ -117,10 +98,18 @@ class GetSalesController {
           }).then((response) => {
             var Total = 0;
             response.forEach((item) => {
-              Total = Total + item.total;
+              Total = Total + 1;
             });
             if (Total) {
-              finalResponse.push({ date: i, total: Total });
+              finalResponse.push({
+                date:
+                  i.toString() +
+                  "/" +
+                  (today_date.getMonth() + 1).toString() +
+                  "/" +
+                  today_date.getFullYear().toString(),
+                total: Total,
+              });
             }
           });
         }
@@ -132,19 +121,6 @@ class GetSalesController {
         });
       });
     } else if (period == "pastMonth") {
-      // Order.aggregate([
-      //   { $addFields: { month: { $month: "$createdAt" } } },
-      //   { $match: { month: thisMonth } },
-      // ]).then((response, err) => {
-      //   if (err) {
-      //     return res.status(400).send(err);
-      //   } else {
-      //     res.status(200).json({
-      //       sales: response,
-      //     });
-      //   }
-      // });
-
       var finalResponse = [];
 
       async function func() {
@@ -179,7 +155,7 @@ class GetSalesController {
             );
           }
 
-          await Order.find({
+          await User.find({
             createdAt: {
               $gte: CustomDate,
               $lt: CustomDateMax,
@@ -187,10 +163,18 @@ class GetSalesController {
           }).then((response) => {
             var Total = 0;
             response.forEach((item) => {
-              Total = Total + item.total;
+              Total = Total + 1;
             });
             if (Total) {
-              finalResponse.push({ date: i, total: Total });
+              finalResponse.push({
+                date:
+                  i.toString() +
+                  "/" +
+                  (today_date.getMonth() + 1).toString() +
+                  "/" +
+                  today_date.getFullYear().toString(),
+                total: Total,
+              });
             }
           });
         }
@@ -202,12 +186,14 @@ class GetSalesController {
         });
       });
     } else if (period == "thisWeek") {
-      Order.find({
+      User.find({
         createdAt: {
           $gte: LAST_MONDAY_Date,
           $lt: NEXT_SUNDAY_Date,
         },
       }).then((response, err) => {
+        console.log(NEXT_SUNDAY_Date);
+        console.log(LAST_MONDAY_Date);
         if (err) {
           return res.status(400).send(err);
         } else {
@@ -216,7 +202,7 @@ class GetSalesController {
           for (var i = 0; i < length; i++) {
             var total = 0;
 
-            var total = response[i]?.total;
+            var total = 1;
 
             for (var j = i + 1; j < length; j++) {
               if (
@@ -227,15 +213,19 @@ class GetSalesController {
                 response[i]?.createdAt.getYear() ==
                   response[j]?.createdAt.getYear()
               ) {
-                if (response[j]?.total) {
-                  total = total + response[j].total;
-                }
+                total = total + 1;
+
                 delete response[j];
               }
             }
             if (response[i]) {
               finalResponse.push({
-                date: response[i].createdAt.getDate(),
+                date:
+                  response[i].createdAt.getDate() +
+                  "/" +
+                  response[i].createdAt.getMonth() +
+                  "/" +
+                  response[i].createdAt.getYear(),
                 total: total,
               });
             }
@@ -254,7 +244,7 @@ class GetSalesController {
         var tomorrow = new Date(CustomDate);
         tomorrow.setDate(CustomDate.getDate() + 1);
         tomorrow.toLocaleDateString();
-        Order.find({
+        User.find({
           createdAt: {
             $gte: CustomDate,
             $lt: tomorrow,
@@ -266,9 +256,7 @@ class GetSalesController {
             var finalResponse = [];
             var length = response.length;
             for (var i = 0; i < length; i++) {
-              var total = 0;
-
-              var total = response[i]?.total;
+              var total = 1;
 
               for (var j = i + 1; j < length; j++) {
                 if (
@@ -279,9 +267,7 @@ class GetSalesController {
                   response[i]?.createdAt.getYear() ==
                     response[j]?.createdAt.getYear()
                 ) {
-                  if (response[j]?.total) {
-                    total = total + response[j].total;
-                  }
+                  total = total + 1;
                   delete response[j];
                 }
               }
@@ -316,7 +302,7 @@ class GetSalesController {
         var tomorrow = new Date(CustomDate);
         tomorrow.setDate(CustomDate.getDate() + 1);
         tomorrow.toLocaleDateString();
-        Order.find({
+        User.find({
           createdAt: {
             $gte: CustomDate,
           },
@@ -327,9 +313,7 @@ class GetSalesController {
             var finalResponse = [];
             var length = response.length;
             for (var i = 0; i < length; i++) {
-              var total = 0;
-
-              var total = response[i]?.total;
+              var total = 1;
 
               for (var j = i + 1; j < length; j++) {
                 if (
@@ -340,9 +324,7 @@ class GetSalesController {
                   response[i]?.createdAt.getYear() ==
                     response[j]?.createdAt.getYear()
                 ) {
-                  if (response[j]?.total) {
-                    total = total + response[j].total;
-                  }
+                  total = total + 1;
                   delete response[j];
                 }
               }
@@ -372,7 +354,7 @@ class GetSalesController {
         var tomorrow = new Date(CustomDate);
         tomorrow.setDate(CustomDate.getDate() + 1);
         tomorrow.toLocaleDateString();
-        Order.find({
+        User.find({
           createdAt: {
             $lt: tomorrow,
           },
@@ -383,9 +365,7 @@ class GetSalesController {
             var finalResponse = [];
             var length = response.length;
             for (var i = 0; i < length; i++) {
-              var total = 0;
-
-              var total = response[i]?.total;
+              var total = 1;
 
               for (var j = i + 1; j < length; j++) {
                 if (
@@ -396,9 +376,8 @@ class GetSalesController {
                   response[i]?.createdAt.getYear() ==
                     response[j]?.createdAt.getYear()
                 ) {
-                  if (response[j]?.total) {
-                    total = total + response[j].total;
-                  }
+                  total = total + 1;
+
                   delete response[j];
                 }
               }
@@ -430,4 +409,4 @@ class GetSalesController {
   }
 }
 
-module.exports = GetSalesController;
+module.exports = GetUserController;

@@ -1,6 +1,6 @@
 const Service = require("../models/service");
 
-class PostServiceController {
+class GetServiceController {
   static async Execute(req, res) {
     Service.find().then((response, err) => {
       if (err) {
@@ -14,4 +14,4 @@ class PostServiceController {
   }
 }
 
-module.exports = PostServiceController;
+module.exports = GetServiceController;

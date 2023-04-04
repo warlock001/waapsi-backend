@@ -1,0 +1,22 @@
+ali@gmail.com
+8472
+
+
+
+zabloona@gmail.com
+4651
+
+
+
+
+ images = [
+      {
+        image: `https://www.armymwr.com/application/files/7816/0130/4930/DG_banner_examples_WebPromo_Community.jpg`,
+        link: `https://www.armymwr.com/application/files/7816/0130/4930/DG_banner_examples_WebPromo_Community.jpg`,
+      },
+    ];
+
+
+
+dispatch(setPromotions(images));
+    dispatch(setSidebar(false));

@@ -23,6 +23,8 @@ app.use(require("./routes/login"));
 app.use(require("./routes/service"));
 app.use(require("./routes/order"));
 app.use(require("./routes/sales"));
+app.use(require("./routes/customer"));
+app.use(require("./routes/expense"));
 
 app.listen(process.env.API_PORT, (error) => {
   if (error) {
