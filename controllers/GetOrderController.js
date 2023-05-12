@@ -22,7 +22,7 @@ class GetOrderController {
         },
 
 
-      ]).sort({ createdAt: 'desc' }).then((response, err) => {
+      ]).sort({ createdAt: 'desc' }, (response, err) => {
         if (err) {
           return res.status(400).send(err);
         } else {
@@ -31,7 +31,13 @@ class GetOrderController {
             order: response,
           });
         }
-      });
+      })
+
+
+
+
+
+
     } else {
       Order.aggregate([
         { $sort: { phone: 1, _id: -1 } },
@@ -41,7 +47,7 @@ class GetOrderController {
             order: { $first: "$$ROOT" },
           },
         },
-      ]).sort({ createdAt: 'desc' }).then((response, err) => {
+      ]).sort({ createdAt: 'desc' }, (response, err) => {
         if (err) {
           return res.status(400).send(err);
         } else {
@@ -49,7 +55,9 @@ class GetOrderController {
             order: response,
           });
         }
-      });
+      })
+
+
     }
   }
 }
