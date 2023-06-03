@@ -32,6 +32,7 @@ class LoginController {
               console.log(user[0].isVerified);
               res.status(200).send({
                 message: "Login Successfull",
+                company: user[0].companyName,
                 email: existingUser.email,
                 _id: user[0]._id,
                 token: token,

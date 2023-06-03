@@ -13,16 +13,16 @@ class GetOrderController {
         {
           $match: { createdAt: { $gte: new Date(CustomDate), } }
         },
-        { $sort: { phone: 1, _id: -1 } },
+
         {
           $group: {
             _id: "$phone",
             order: { $first: "$$ROOT" },
           },
         },
+        { $sort: { createdAt: -1 } },
 
-
-      ]).sort({ createdAt: 'desc' }, (response, err) => {
+      ]).sort({ createdAt: 'desc' }).then((response, err) => {
         if (err) {
           return res.status(400).send(err);
         } else {
@@ -31,7 +31,7 @@ class GetOrderController {
             order: response,
           });
         }
-      })
+      });
 
 
 
@@ -40,14 +40,15 @@ class GetOrderController {
 
     } else {
       Order.aggregate([
-        { $sort: { phone: 1, _id: -1 } },
+
         {
           $group: {
             _id: "$phone",
             order: { $first: "$$ROOT" },
           },
         },
-      ]).sort({ createdAt: 'desc' }, (response, err) => {
+        { $sort: { createdAt: 1 } },
+      ]).sort({ createdAt: 'asc' }, (response, err) => {
         if (err) {
           return res.status(400).send(err);
         } else {
@@ -56,8 +57,6 @@ class GetOrderController {
           });
         }
       })
-
-
     }
   }
 }
