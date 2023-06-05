@@ -13,15 +13,15 @@ const UserSchema = mongoose.Schema(
     },
     companyName: {
       type: String,
-      required: true,
+      required: false,
     },
     dialCode: {
       type: String,
-      required: true,
+      required: false,
     },
     mobile: {
       type: String,
-      required: true,
+      required: false,
     },
 
     role: {
