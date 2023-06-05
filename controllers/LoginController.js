@@ -91,7 +91,7 @@ class LoginController {
             role: 'client',
           });
 
-          user.save().then((response, err) => {
+          user.save().then((response) => {
 
             const token = jwt.sign(
               JSON.stringify({
