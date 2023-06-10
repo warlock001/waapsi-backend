@@ -25,6 +25,7 @@ app.use(require("./routes/order"));
 app.use(require("./routes/sales"));
 app.use(require("./routes/customer"));
 app.use(require("./routes/expense"));
+app.use(require("./routes/user"));
 
 app.listen(process.env.API_PORT, (error) => {
   if (error) {
